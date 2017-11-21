@@ -43,7 +43,7 @@ bot.on('message', (msg) => {
 
 function start() {
 
-    task = cron.schedule('* */1 * * *', function () {
+    task = cron.schedule('0 9-17 * * *', function () {
         
         Object.keys(PRODUCT).forEach(function (key) {
             request.get({
