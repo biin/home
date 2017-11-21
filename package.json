@@ -1,0 +1,27 @@
+{
+  "name": "home",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "ikea": "node ./server/util/ikea"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/biin/home.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/biin/home/issues"
+  },
+  "homepage": "https://github.com/biin/home#readme",
+  "dependencies": {
+    "axios": "^0.17.1",
+    "node-cron": "^1.2.1",
+    "node-telegram-bot-api": "^0.29.0",
+    "request": "^2.83.0",
+    "xml2js": "^0.4.19"
+  }
+}
