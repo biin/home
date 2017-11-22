@@ -41,6 +41,8 @@ bot.on('message', (msg) => {
         start();
     } else if ('/T' === command) {
         stop();
+    } else if('/S' === command){
+        alive();
     }
 });
 
