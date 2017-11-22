@@ -3,6 +3,9 @@ const parser = require('xml2js');
 const TelegramBot = require('node-telegram-bot-api');
 const fs = require('fs');
 const cron = require('node-cron');
+const axios = require('axios');
+const parseString = require('xml2js').parseString;
+const co = require('co');
 
 let botToken;
 try {
@@ -43,23 +46,27 @@ bot.on('message', (msg) => {
 
 function start() {
 
-    task = cron.schedule('0 9-17 * * *', function () {
-        
-        Object.keys(PRODUCT).forEach(function (key) {
-            request.get({
-                url: 'http://www.ikea.com/kr/ko/iows/catalog/availability/' + key,
-                method: 'GET'
-            }, function (err, res, body) {
-                if (!err && res.statusCode == 200) {
-                    var parseString = require('xml2js').parseString;
-                    parseString(body, function (err, result) {
-                        checkInventory(result['ir:ikea-rest']['availability'][0].localStore);
-                    });
-                }
-            });
+    task = cron.schedule('* * * * *', function () {
+
+        let requests = Object.keys(PRODUCT).map((key) => {
+            return axios.get('http://www.ikea.com/kr/ko/iows/catalog/availability/' + key);
         });
+
+        axios.all(requests)
+            .then(axios.spread(function (inv1, inv2, inv3) {
+                co(function *(){
+                    let invRes1 = parseXml(inv1.data);
+                    let invRes2 = parseXml(inv2.data);
+                    let invRes3 = parseXml(inv3.data);
+
+                    let results = yield [invRes1, invRes2, invRes3];
+                    checkInventories(results);
+                }).catch((err) => {
+                    console.log(err);
+                });
+            }));
     }, false);
-    
+
     task.start();
     bot.sendMessage(chatId, '서비스를 시작합니다.');
 }
@@ -67,6 +74,30 @@ function start() {
 function stop() {
     task.destroy();
     bot.sendMessage(chatId, '서비스를 종료합니다.');
+}
+
+function alive(){
+    bot.sendMessage(chatId, '살아 있어요~');
+}
+function parseXml(data){
+    return new Promise( (resolve, rejct) => {
+        parseString(data, function (err, result) {
+            if(err){
+                reject(err);
+            }else{
+                resolve(result);
+            }
+        });
+    })
+}
+
+function checkInventories(results) {
+    let msg = "==========================\n";
+    results.forEach((result, index, arr) => {
+        msg += checkInventory(result['ir:ikea-rest']['availability'][0].localStore);
+    });
+    msg += "==========================";
+    bot.sendMessage(chatId, msg);
 }
 
 function checkInventory(invStores) {
@@ -77,5 +108,5 @@ function checkInventory(invStores) {
         let availableStock = store.stock[0].availableStock;
         msg += (PRODUCT[partName] + ' : ' + STORE[storeCode] + ' - ' + availableStock + ' \n');
     });
-    bot.sendMessage(chatId, msg);
+    return msg;
 }

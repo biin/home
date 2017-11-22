@@ -19,6 +19,7 @@
   "homepage": "https://github.com/biin/home#readme",
   "dependencies": {
     "axios": "^0.17.1",
+    "co": "^4.6.0",
     "node-cron": "^1.2.1",
     "node-telegram-bot-api": "^0.29.0",
     "request": "^2.83.0",
