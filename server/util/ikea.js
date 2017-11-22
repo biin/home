@@ -47,8 +47,9 @@ bot.on('message', (msg) => {
 });
 
 function start() {
+    task && task.destroy();
 
-    task = cron.schedule('* * * * *', function () {
+    task = cron.schedule('00 09-21 * * *', function () {
 
         let requests = Object.keys(PRODUCT).map((key) => {
             return axios.get('http://www.ikea.com/kr/ko/iows/catalog/availability/' + key);
@@ -74,7 +75,7 @@ function start() {
 }
 
 function stop() {
-    task.destroy();
+    task && task.destroy();
     bot.sendMessage(chatId, '서비스를 종료합니다.');
 }
 
